@@ -107,8 +107,9 @@
     var check = Model.validateProduct(input);
     if (!check.ok) { var e = $("modalError"); e.textContent = check.error; e.hidden = false; return; }
     var id = $("fId").value;
-    commit(id ? Model.updateProduct(state, id, input) : Model.addProduct(state, input));
-    closeModal();
+    var next = id ? Model.updateProduct(state, id, input) : Model.addProduct(state, input);
+    closeModal();          // close first, so a failed cloud save can't keep it open
+    commit(next);
   }
 
   // ---- events --------------------------------------------------------------
