@@ -1,35 +1,45 @@
-// store.js — talks to OUR serverless proxy (/api/stock), never to JSONBin
-// directly. The key lives on the server, so nothing secret is in the browser.
+// store.js — calls JSONBin directly from the browser (pure static app).
+// Uses a BIN-SCOPED ACCESS KEY (X-Access-Key) from config.js. That key is
+// public (it ships in the page), so it MUST be an Access Key limited to this
+// one bin — never the account Master Key.
 
 (function () {
   "use strict";
 
-  var API = "/api/stock";
+  var BASE = "https://api.jsonbin.io/v3/b";
 
-  // The proxy only works when served by Vercel (deployed, or `vercel dev`).
-  // Opening index.html via file:// has no /api, so flag that for a clear message.
-  function isServed() { return location.protocol === "http:" || location.protocol === "https:"; }
+  function cfg() { return window.STOCK_CONFIG || {}; }
+
+  function hasConfig() {
+    var c = cfg();
+    return !!(c.binId && c.accessKey &&
+      c.binId.indexOf("PASTE_") !== 0 && c.accessKey.indexOf("PASTE_") !== 0);
+  }
+
+  function headers() {
+    return { "Content-Type": "application/json", "X-Access-Key": cfg().accessKey };
+  }
 
   function load() {
-    return fetch(API, { method: "GET" })
+    return fetch(BASE + "/" + cfg().binId + "/latest", { headers: headers() })
       .then(function (r) {
-        if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || ("HTTP " + r.status)); });
+        if (!r.ok) throw new Error("Load failed (HTTP " + r.status + ")");
         return r.json();
       })
-      .then(function (doc) { return Model.normalize(doc); });
+      .then(function (json) { return Model.normalize(json && json.record ? json.record : json); });
   }
 
   function save(state) {
     var doc = Object.assign({}, state, { updatedAt: new Date().toISOString() });
-    return fetch(API, {
+    return fetch(BASE + "/" + cfg().binId, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: Object.assign({ "X-Bin-Versioning": "false" }, headers()),
       body: JSON.stringify(doc)
     }).then(function (r) {
-      if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || ("HTTP " + r.status)); });
-      return r.json().then(function (j) { return Object.assign({}, doc, { updatedAt: j.updatedAt || doc.updatedAt }); });
+      if (!r.ok) throw new Error("Save failed (HTTP " + r.status + ")");
+      return doc;
     });
   }
 
-  window.Store = { isServed: isServed, load: load, save: save };
+  window.Store = { hasConfig: hasConfig, load: load, save: save };
 })();

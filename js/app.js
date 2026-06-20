@@ -184,11 +184,11 @@
 
   // ---- boot ----------------------------------------------------------------
   function boot() {
-    if (!Store.isServed()) {
-      // Opened via file:// — the /api proxy needs a server.
+    if (!Store.hasConfig()) {
+      // config.js still has placeholder values.
       $("setupScreen").hidden = false;
       $("app").hidden = true;
-      setSync("err", "Run on a server");
+      setSync("err", "No config");
       return;
     }
     $("setupScreen").hidden = true;

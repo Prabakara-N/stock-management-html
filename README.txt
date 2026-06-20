@@ -1,21 +1,26 @@
 ==============================================================================
 STOCK MANAGER — simple inventory for ONE store
-No traditional database. No localStorage. Syncs laptop + mobile.
-The JSONBin key stays SECRET on a Vercel serverless function (not in the browser).
+Pure static site (HTML/CSS/JS). No backend, no localStorage.
+Syncs laptop + mobile via a free JSONBin bin. Hosts on GitHub Pages.
 ==============================================================================
 
 WHAT IT DOES
-  - Add / edit / delete products (category, SKU, qty, min-qty, price, cost)
+  - Add / edit / delete products (category, optional SKU, qty, min-qty, price, cost)
   - Record Stock IN / Stock OUT movements (auto-adjusts qty + keeps history)
   - Dashboard with graphs: quantity on hand, value by category, low-stock
   - Export CSV (products & movements) and JSON backup; import JSON to restore
   - Phone + laptop show the SAME data (it lives in one cloud bin)
 
-HOW IT'S SECURE
-  - The browser calls OUR function at /api/stock.
-  - That function (api/stock.js) talks to JSONBin using a key stored as a Vercel
-    ENV VAR. The key is never sent to the browser, so it's safe to make the repo
-    and the link public.
+------------------------------------------------------------------------------
+READ THIS FIRST — SECURITY
+------------------------------------------------------------------------------
+  This is a no-backend app, so the JSONBin key is shipped inside config.js and
+  is PUBLIC. That is fine ONLY if you follow these rules:
+    * Use a JSONBin ACCESS KEY scoped to this ONE bin (Read + Update).
+    * NEVER put your account MASTER KEY in config.js or any committed file.
+      (If you ever pasted a Master Key, go rotate/regenerate it now.)
+  Worst case if the Access Key leaks: someone can read/edit THIS stock bin only
+  — not your account, not other bins. Acceptable for a small private store tool.
 
 ------------------------------------------------------------------------------
 ONE-TIME SETUP
@@ -24,37 +29,38 @@ ONE-TIME SETUP
    - Sign up at https://jsonbin.io
    - Create a Bin with content exactly:  {"products":[],"movements":[]}
    - Copy the BIN ID.
-   - Open "API Keys" and copy your MASTER KEY (or create a bin-scoped Access Key
-     for tighter security — recommended).
 
-2. Push this folder to GitHub.
+2. Make a bin-scoped Access Key:
+   - Open "API Keys" (or "Access Keys").
+   - Create an Access Key with READ and UPDATE permission, restricted to the
+     bin you just made. Copy it.
 
-3. Deploy on Vercel:
-   - Go to https://vercel.com -> "Add New… -> Project" -> import your repo.
-   - In Project Settings -> Environment Variables, add:
-        JSONBIN_MASTER_KEY = <your key>
-        JSONBIN_BIN_ID     = <your bin id>
-   - Deploy. Vercel gives you a URL like  https://your-app.vercel.app
+3. Fill in config.js:
+        binId:     "your bin id"
+        accessKey: "your access key"
+   (Optional: currency "₹"/"$"/"€", and showSku: true to show the SKU column.)
 
-4. Share that URL with your friend. Open it on laptop AND phone — same data.
-   (Tip on mobile: browser menu -> "Add to Home Screen" for an app-like icon.)
+4. Test locally (optional): just double-click index.html. Because the app calls
+   JSONBin over https, sync works straight from the file.
 
 ------------------------------------------------------------------------------
-RUN / TEST LOCALLY (optional)
+PUBLISH ON GITHUB PAGES
 ------------------------------------------------------------------------------
-  The /api function needs Vercel's dev server (plain file:// or python http
-  server won't have /api):
-      npm i -g vercel
-      cp .env.example .env        # then put your real key + bin id in .env
-      vercel dev                  # open the printed http://localhost URL
+1. Push this folder to a GitHub repo.
+2. Repo -> Settings -> Pages.
+3. Source: "Deploy from a branch" -> Branch: main -> Folder: / (root) -> Save.
+4. Wait ~1 minute. GitHub gives you a URL like:
+        https://<your-username>.github.io/<repo-name>/
+5. Share that URL with your friend. Open it on laptop AND phone — same data.
+   (Mobile tip: browser menu -> "Add to Home Screen" for an app-like icon.)
 
 ------------------------------------------------------------------------------
 HOW SYNC WORKS
 ------------------------------------------------------------------------------
-  - On open: app GETs /api/stock and shows the data.
-  - On any change: it PUTs the whole document (~1s after a change). "Save now"
+  - On open: app reads the bin and shows it.
+  - On any change: it writes the whole document (~1s after a change). "Save now"
     forces an immediate save.
-  - "Reload" pulls the latest (use it to see edits made on the other device).
+  - "Reload" pulls the latest (use it to see edits from the other device).
   - Last-write-wins. For one store that's safe; press Reload before editing if
     both of you were using it at the same moment.
 
@@ -63,24 +69,18 @@ FILES
 ------------------------------------------------------------------------------
   index.html         layout + loads Chart.js (CDN) and the scripts below
   styles.css         responsive, mobile-first styling + bottom tab bar
-  config.js          NON-SECRET UI settings (currency). Safe to commit.
-  vercel.json        Vercel config (clean URLs)
-  .env.example       template for local env vars (copy to .env, gitignored)
-  api/stock.js       serverless proxy; holds the key via env vars (GET/PUT)
+  config.js          YOUR bin id + bin-scoped Access Key + UI settings (committed)
   js/model.js        pure inventory logic (immutable add/edit/delete/movement)
-  js/store.js        client that calls /api/stock (no key in browser)
+  js/store.js        reads/writes the JSONBin bin directly
   js/export.js       CSV/JSON export + JSON import
   js/charts.js       the three Chart.js graphs
   js/ui.js           rendering (tables, stats, selects)
   js/app.js          controller: state, events, load-on-start, debounced save
 
 ------------------------------------------------------------------------------
-NOTES / LIMITATIONS
+LIMITATIONS
 ------------------------------------------------------------------------------
-  - The key is server-side now, so a public repo + public link is fine. Do NOT
-    commit your .env (it's gitignored). Set the key in Vercel env vars instead.
-  - For least privilege, use a JSONBin Access Key scoped to just this one bin.
-  - Last-write-wins on simultaneous edits. No user accounts / multi-store
-    (kept intentionally simple for one shop).
-  - Free JSONBin + Vercel Hobby limits are plenty for one small store.
+  - Access Key is public (see Security). Keep it bin-scoped.
+  - Last-write-wins on simultaneous edits. No accounts / multi-store (kept simple).
+  - Free JSONBin has generous limits; plenty for one small store.
 ==============================================================================

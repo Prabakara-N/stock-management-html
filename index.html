@@ -25,17 +25,17 @@
   <!-- Banners -->
   <div id="banner" class="banner" hidden></div>
 
-  <!-- Setup screen (shown when opened via file:// with no server) -->
+  <!-- Setup screen (shown when config.js still has placeholders) -->
   <section id="setupScreen" class="setup" hidden>
-    <h2>Needs to run on a server</h2>
-    <p>This app talks to a small serverless function at <code>/api/stock</code> that
-       keeps your JSONBin key secret. Opening the file directly (file://) has no
-       server, so it can't sync.</p>
-    <p><strong>To run it:</strong></p>
+    <h2>One-time setup</h2>
+    <p>This app keeps your stock in a free <strong>JSONBin.io</strong> bin so laptop
+       and mobile stay in sync. No database, no localStorage.</p>
     <ol>
-      <li>Locally: <code>npm i -g vercel</code> then <code>vercel dev</code> in this folder, and open the printed <code>http://localhost</code> URL.</li>
-      <li>Or deploy: push to GitHub, import the repo on <a href="https://vercel.com" target="_blank" rel="noopener">vercel.com</a>.</li>
-      <li>Set env vars <code>JSONBIN_MASTER_KEY</code> and <code>JSONBIN_BIN_ID</code> (see <code>README.txt</code>).</li>
+      <li>Create a free account at <a href="https://jsonbin.io" target="_blank" rel="noopener">jsonbin.io</a>.</li>
+      <li>Create a <strong>Bin</strong> with content <code>{"products":[],"movements":[]}</code> and copy its <strong>Bin ID</strong>.</li>
+      <li>On the API Keys page, create an <strong>Access Key</strong> scoped to that bin (Read + Update). Copy it.</li>
+      <li>Open <code>config.js</code> and paste the <strong>Bin ID</strong> and <strong>Access Key</strong>.</li>
+      <li>Reload this page. See <code>README.txt</code> for details.</li>
     </ol>
   </section>
 
@@ -180,7 +180,7 @@
     </div>
   </div>
 
-  <!-- config.js = non-secret UI settings only (currency). Safe to commit. -->
+  <!-- config.js = bin id + bin-scoped Access Key + UI settings. -->
   <script src="config.js"></script>
   <script src="js/model.js"></script>
   <script src="js/store.js"></script>

@@ -1,9 +1,4 @@
-# Local env vars for `vercel dev` — holds the JSONBin key. NEVER commit.
-.env
-.env.local
-
-# Vercel
-.vercel
-
-# Node
 node_modules
+.DS_Store
+# NOTE: config.js IS committed on purpose — GitHub Pages needs it.
+# Only ever put a BIN-SCOPED ACCESS KEY there, never the Master Key.

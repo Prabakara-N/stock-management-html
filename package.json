@@ -1,7 +1,0 @@
-{
-  "name": "stock-manager",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "description": "Simple single-store stock management. No database; cloud sync via a serverless proxy."
-}
