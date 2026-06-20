@@ -128,6 +128,14 @@
     $("modalCancel").addEventListener("click", closeModal);
     $("modal").addEventListener("click", function (e) { if (e.target === $("modal")) closeModal(); });
 
+    // Number fields show 0 by default; clear it on focus so users don't have to
+    // delete it first. Left empty = 0 (the model already treats "" as 0).
+    ["fQty", "fMinQty", "fPrice", "fCost"].forEach(function (id) {
+      var el = $(id);
+      el.addEventListener("focus", function () { if (el.value === "0") el.value = ""; });
+      el.addEventListener("blur", function () { if (el.value.trim() === "") el.value = "0"; });
+    });
+
     // Edit / delete via event delegation on the product table.
     $("productBody").addEventListener("click", function (e) {
       var editId = e.target.getAttribute("data-edit");

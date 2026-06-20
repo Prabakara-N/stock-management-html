@@ -2,23 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#171a21" />
   <title>Stock Manager</title>
   <link rel="stylesheet" href="styles.css" />
   <!-- Chart.js from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
+  <!-- SVG icon sprite (Lucide-style, stroke = currentColor) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>
+      </symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>
+      </symbol>
+      <symbol id="i-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 16v-3"/><path d="M12 16V8"/><path d="M17 16v-5"/>
+      </symbol>
+      <symbol id="i-products" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
+      </symbol>
+      <symbol id="i-movement" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>
+      </symbol>
+      <symbol id="i-data" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>
+      </symbol>
+      <symbol id="i-arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><path d="M19 21H5"/>
+      </symbol>
+      <symbol id="i-arrow-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m18 9-6-6-6 6"/><path d="M12 3v14"/><path d="M5 21h14"/>
+      </symbol>
+      <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 13v8"/><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="m8 17 4-4 4 4"/>
+      </symbol>
+      <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14"/><path d="M12 5v14"/>
+      </symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>
+      </symbol>
+    </defs>
+  </svg>
+
   <!-- Top bar -->
   <header class="topbar">
     <div class="brand">
-      <span class="logo">📦</span>
+      <span class="logo"><svg class="icon"><use href="#i-box"/></svg></span>
       <input id="storeName" class="store-name" type="text" placeholder="My Store" />
     </div>
     <div class="sync">
       <span id="syncDot" class="dot dot--idle" title="sync status"></span>
       <span id="syncText" class="sync-text">Not loaded</span>
-      <button id="reloadBtn" class="btn btn--ghost" title="Pull latest from cloud">⟳ Reload</button>
+      <button id="reloadBtn" class="btn btn--ghost" title="Pull latest from cloud"><svg class="icon"><use href="#i-refresh"/></svg> Reload</button>
     </div>
   </header>
 
@@ -54,15 +100,15 @@
       <div class="charts">
         <div class="card chart-card">
           <h3>Quantity on hand</h3>
-          <canvas id="chartQty"></canvas>
+          <div class="chart-box"><canvas id="chartQty"></canvas></div>
         </div>
         <div class="card chart-card">
           <h3>Inventory value by category</h3>
-          <canvas id="chartCategory"></canvas>
+          <div class="chart-box"><canvas id="chartCategory"></canvas></div>
         </div>
         <div class="card chart-card">
           <h3>Low stock items</h3>
-          <canvas id="chartLow"></canvas>
+          <div class="chart-box"><canvas id="chartLow"></canvas></div>
         </div>
       </div>
     </section>
@@ -71,7 +117,7 @@
     <section id="view-products" class="view" hidden>
       <div class="toolbar">
         <input id="search" class="search" type="search" placeholder="Search name / SKU / category…" />
-        <button id="addProductBtn" class="btn btn--primary">+ Add product</button>
+        <button id="addProductBtn" class="btn btn--primary"><svg class="icon"><use href="#i-plus"/></svg> Add product</button>
       </div>
       <div class="table-wrap">
         <table class="table" id="productTable">
@@ -104,8 +150,8 @@
           </label>
         </div>
         <div class="form-actions">
-          <button id="stockInBtn" class="btn btn--in">⬇ Stock IN</button>
-          <button id="stockOutBtn" class="btn btn--out">⬆ Stock OUT</button>
+          <button id="stockInBtn" class="btn btn--in"><svg class="icon"><use href="#i-arrow-down"/></svg> Stock IN</button>
+          <button id="stockOutBtn" class="btn btn--out"><svg class="icon"><use href="#i-arrow-up"/></svg> Stock OUT</button>
         </div>
       </div>
 
@@ -127,16 +173,16 @@
         <h3>Cloud sync</h3>
         <p class="muted">Last synced: <span id="lastSynced">—</span></p>
         <div class="form-actions">
-          <button id="saveBtn" class="btn btn--primary">☁ Save now</button>
-          <button id="reloadBtn2" class="btn btn--ghost">⟳ Reload from cloud</button>
+          <button id="saveBtn" class="btn btn--primary"><svg class="icon"><use href="#i-cloud"/></svg> Save now</button>
+          <button id="reloadBtn2" class="btn btn--ghost"><svg class="icon"><use href="#i-refresh"/></svg> Reload from cloud</button>
         </div>
       </div>
       <div class="card">
         <h3>Export</h3>
         <div class="form-actions">
-          <button id="csvProductsBtn" class="btn">⬇ Products CSV</button>
-          <button id="csvMovementsBtn" class="btn">⬇ Movements CSV</button>
-          <button id="jsonBackupBtn" class="btn">⬇ JSON backup</button>
+          <button id="csvProductsBtn" class="btn"><svg class="icon"><use href="#i-download"/></svg> Products CSV</button>
+          <button id="csvMovementsBtn" class="btn"><svg class="icon"><use href="#i-download"/></svg> Movements CSV</button>
+          <button id="jsonBackupBtn" class="btn"><svg class="icon"><use href="#i-download"/></svg> JSON backup</button>
         </div>
       </div>
       <div class="card">
@@ -149,10 +195,10 @@
 
   <!-- Bottom nav -->
   <nav class="bottom-nav">
-    <button class="nav-btn is-active" data-view="dashboard"><span>📊</span>Dashboard</button>
-    <button class="nav-btn" data-view="products"><span>📋</span>Products</button>
-    <button class="nav-btn" data-view="movement"><span>🔁</span>Movement</button>
-    <button class="nav-btn" data-view="data"><span>💾</span>Data</button>
+    <button class="nav-btn is-active" data-view="dashboard"><span><svg class="icon"><use href="#i-dashboard"/></svg></span>Dashboard</button>
+    <button class="nav-btn" data-view="products"><span><svg class="icon"><use href="#i-products"/></svg></span>Products</button>
+    <button class="nav-btn" data-view="movement"><span><svg class="icon"><use href="#i-movement"/></svg></span>Movement</button>
+    <button class="nav-btn" data-view="data"><span><svg class="icon"><use href="#i-data"/></svg></span>Data</button>
   </nav>
 
   <!-- Product modal -->

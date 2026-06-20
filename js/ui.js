@@ -43,8 +43,8 @@
         "<td class='num'>" + money(p.price) + "</td>" +
         "<td class='num'>" + money(p.qty * p.price) + "</td>" +
         "<td class='num'>" +
-          "<button class='btn btn--ghost' data-edit='" + p.id + "'>✎</button> " +
-          "<button class='btn btn--danger' data-del='" + p.id + "'>🗑</button>" +
+          "<button class='btn btn--ghost btn--icon' title='Edit' data-edit='" + p.id + "'><svg class='icon'><use href='#i-edit'/></svg></button> " +
+          "<button class='btn btn--danger btn--icon' title='Delete' data-del='" + p.id + "'><svg class='icon'><use href='#i-trash'/></svg></button>" +
         "</td></tr>";
     }).join("");
 
