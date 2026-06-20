@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Manager</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Chart.js from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">📦</span>
+      <input id="storeName" class="store-name" type="text" placeholder="My Store" />
+    </div>
+    <div class="sync">
+      <span id="syncDot" class="dot dot--idle" title="sync status"></span>
+      <span id="syncText" class="sync-text">Not loaded</span>
+      <button id="reloadBtn" class="btn btn--ghost" title="Pull latest from cloud">⟳ Reload</button>
+    </div>
+  </header>
+
+  <!-- Banners -->
+  <div id="banner" class="banner" hidden></div>
+
+  <!-- Setup screen (shown when opened via file:// with no server) -->
+  <section id="setupScreen" class="setup" hidden>
+    <h2>Needs to run on a server</h2>
+    <p>This app talks to a small serverless function at <code>/api/stock</code> that
+       keeps your JSONBin key secret. Opening the file directly (file://) has no
+       server, so it can't sync.</p>
+    <p><strong>To run it:</strong></p>
+    <ol>
+      <li>Locally: <code>npm i -g vercel</code> then <code>vercel dev</code> in this folder, and open the printed <code>http://localhost</code> URL.</li>
+      <li>Or deploy: push to GitHub, import the repo on <a href="https://vercel.com" target="_blank" rel="noopener">vercel.com</a>.</li>
+      <li>Set env vars <code>JSONBIN_MASTER_KEY</code> and <code>JSONBIN_BIN_ID</code> (see <code>README.txt</code>).</li>
+    </ol>
+  </section>
+
+  <!-- App -->
+  <main id="app" class="app" hidden>
+
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="view">
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="statProducts">0</div><div class="stat-lbl">Products</div></div>
+        <div class="stat"><div class="stat-val" id="statUnits">0</div><div class="stat-lbl">Total units</div></div>
+        <div class="stat"><div class="stat-val" id="statValue">₹0</div><div class="stat-lbl">Inventory value</div></div>
+        <div class="stat stat--warn"><div class="stat-val" id="statLow">0</div><div class="stat-lbl">Low stock</div></div>
+      </div>
+
+      <div class="charts">
+        <div class="card chart-card">
+          <h3>Quantity on hand</h3>
+          <canvas id="chartQty"></canvas>
+        </div>
+        <div class="card chart-card">
+          <h3>Inventory value by category</h3>
+          <canvas id="chartCategory"></canvas>
+        </div>
+        <div class="card chart-card">
+          <h3>Low stock items</h3>
+          <canvas id="chartLow"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section id="view-products" class="view" hidden>
+      <div class="toolbar">
+        <input id="search" class="search" type="search" placeholder="Search name / SKU / category…" />
+        <button id="addProductBtn" class="btn btn--primary">+ Add product</button>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="productTable">
+          <thead>
+            <tr>
+              <th>Name</th><th>Category</th><th class="col-sku">SKU</th>
+              <th class="num">Qty</th><th class="num">Min</th>
+              <th class="num">Price</th><th class="num">Value</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="productBody"></tbody>
+        </table>
+        <p id="emptyProducts" class="empty" hidden>No products yet. Click “Add product”.</p>
+      </div>
+    </section>
+
+    <!-- MOVEMENT -->
+    <section id="view-movement" class="view" hidden>
+      <div class="card">
+        <h3>Record stock movement</h3>
+        <div class="form-row">
+          <label>Product
+            <select id="mvProduct"></select>
+          </label>
+          <label>Quantity
+            <input id="mvQty" type="number" min="1" step="1" value="1" />
+          </label>
+          <label>Note
+            <input id="mvNote" type="text" placeholder="optional" />
+          </label>
+        </div>
+        <div class="form-actions">
+          <button id="stockInBtn" class="btn btn--in">⬇ Stock IN</button>
+          <button id="stockOutBtn" class="btn btn--out">⬆ Stock OUT</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Recent movements</h3>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>When</th><th>Product</th><th>Type</th><th class="num">Qty</th><th>Note</th></tr></thead>
+            <tbody id="movementBody"></tbody>
+          </table>
+          <p id="emptyMovements" class="empty" hidden>No movements recorded yet.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DATA -->
+    <section id="view-data" class="view" hidden>
+      <div class="card">
+        <h3>Cloud sync</h3>
+        <p class="muted">Last synced: <span id="lastSynced">—</span></p>
+        <div class="form-actions">
+          <button id="saveBtn" class="btn btn--primary">☁ Save now</button>
+          <button id="reloadBtn2" class="btn btn--ghost">⟳ Reload from cloud</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Export</h3>
+        <div class="form-actions">
+          <button id="csvProductsBtn" class="btn">⬇ Products CSV</button>
+          <button id="csvMovementsBtn" class="btn">⬇ Movements CSV</button>
+          <button id="jsonBackupBtn" class="btn">⬇ JSON backup</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Import</h3>
+        <p class="muted">Restore from a JSON backup. This overwrites current data.</p>
+        <input id="importFile" type="file" accept="application/json,.json" />
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn is-active" data-view="dashboard"><span>📊</span>Dashboard</button>
+    <button class="nav-btn" data-view="products"><span>📋</span>Products</button>
+    <button class="nav-btn" data-view="movement"><span>🔁</span>Movement</button>
+    <button class="nav-btn" data-view="data"><span>💾</span>Data</button>
+  </nav>
+
+  <!-- Product modal -->
+  <div id="modal" class="modal" hidden>
+    <div class="modal-box">
+      <h3 id="modalTitle">Add product</h3>
+      <input type="hidden" id="fId" />
+      <label>Name <input id="fName" type="text" /></label>
+      <label>Category <input id="fCategory" type="text" list="catList" /></label>
+      <datalist id="catList"></datalist>
+      <label class="col-sku">SKU / code <input id="fSku" type="text" placeholder="optional" /></label>
+      <div class="form-row">
+        <label>Quantity <input id="fQty" type="number" min="0" step="1" value="0" /></label>
+        <label>Min qty <input id="fMinQty" type="number" min="0" step="1" value="0" /></label>
+      </div>
+      <div class="form-row">
+        <label>Price <input id="fPrice" type="number" min="0" step="0.01" value="0" /></label>
+        <label>Cost <input id="fCost" type="number" min="0" step="0.01" value="0" /></label>
+      </div>
+      <p id="modalError" class="error" hidden></p>
+      <div class="form-actions">
+        <button id="modalSave" class="btn btn--primary">Save</button>
+        <button id="modalCancel" class="btn btn--ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- config.js = non-secret UI settings only (currency). Safe to commit. -->
+  <script src="config.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

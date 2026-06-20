@@ -1,0 +1,9 @@
+# Local env vars for `vercel dev` — holds the JSONBin key. NEVER commit.
+.env
+.env.local
+
+# Vercel
+.vercel
+
+# Node
+node_modules
