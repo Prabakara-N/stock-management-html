@@ -228,12 +228,14 @@ label input, label select { margin-top: 5px; }
 /* Bottom nav */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
-  display: flex;
   background: rgba(23, 26, 33, 0.92);
   backdrop-filter: saturate(140%) blur(12px);
   -webkit-backdrop-filter: saturate(140%) blur(12px);
   border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-inner {
+  display: flex; width: 100%; max-width: 1100px; margin: 0 auto;
 }
 .nav-btn {
   position: relative; flex: 1; background: none; border: none; color: var(--muted);
