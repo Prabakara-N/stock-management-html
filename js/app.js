@@ -7,9 +7,22 @@
   var state = Model.emptyState();
   var saveTimer = null;
   var dirty = false;
+  var reads = 0, writes = 0;
+
+  // Wait this long after the LAST change before saving, so a burst of edits
+  // becomes a single write (saves requests on small free plans).
+  var SAVE_DELAY = (window.STOCK_CONFIG && window.STOCK_CONFIG.saveDelayMs) || 4000;
 
   // ---- helpers -------------------------------------------------------------
   function $(id) { return document.getElementById(id); }
+
+  // Count every JSONBin call so the user can watch usage in the Data tab.
+  function countReq(kind) {
+    if (kind === "read") reads++; else writes++;
+    $("reqReads").textContent = reads;
+    $("reqWrites").textContent = writes;
+    $("reqCount").textContent = reads + writes;
+  }
 
   function setSync(kind, text) {
     var dot = $("syncDot");
@@ -37,13 +50,14 @@
 
   function scheduleSave() {
     if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveNow, 1000);
+    saveTimer = setTimeout(saveNow, SAVE_DELAY);
   }
 
   function saveNow() {
     if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
     if (!dirty) return;
     setSync("busy", "Saving…");
+    countReq("write");
     Store.save(state).then(function (doc) {
       state = Object.assign({}, state, { updatedAt: doc.updatedAt });
       dirty = false;
@@ -57,6 +71,7 @@
 
   function loadFromCloud() {
     setSync("busy", "Loading…");
+    countReq("read");
     Store.load().then(function (s) {
       state = s;
       dirty = false;

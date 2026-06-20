@@ -5,5 +5,6 @@ window.STOCK_CONFIG = {
   accessKey: "$2a$10$fQcX7tLzXeixD0uZXD.xo..SO5ZjRvm5Br/nDhPontM9O.rqIBJfa",
   currency: "₹",            // change to "$", "€", etc.
   showSku: false,           // set true to show the SKU/code column & field
+  saveDelayMs: 4000,        // batch edits: save this long after the last change
   lowStockColor: "#ef5350"
 };
